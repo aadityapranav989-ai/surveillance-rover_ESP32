@@ -107,6 +107,31 @@ dipped, often when the motors start) and `clients` (devices on the rover
 Wi-Fi). If the Wi-Fi drops and `uptimeMs` is small afterwards, the ESP32
 itself restarted.
 
+## 16x2 LCD
+
+A 16x2 character LCD with an I2C backpack (PCF8574, 4 pins) shows the
+rover's security status, sent by the Raspberry Pi: `UNKNOWN PERSON` /
+`Tap card: 7s`, `ACCESS GRANTED`, `!! INTRUDER !!` and so on. If the Pi sends
+nothing for 10 seconds (`LCD_PI_TIMEOUT_MS`), the ESP32 shows its own status
+instead (`Pi offline`, GPS fix, Wi-Fi clients).
+
+| LCD backpack pin | ESP32 pin |
+| --- | --- |
+| GND | GND |
+| VCC | 5V (VIN) |
+| SDA | GPIO21 |
+| SCL | GPIO22 |
+
+The ESP32's pins are 3.3 V. Most backpacks pull SDA and SCL up to VCC, so at
+5 V they put 5 V on those pins. Most boards tolerate this, but to be safe
+remove the backpack's two pull-up resistors (usually marked 472), or use a
+small I2C level shifter. The display is found automatically at address 0x27
+or 0x3F; the serial monitor prints `LCD: found at 0x27` at start-up. If the
+text is invisible, turn the blue contrast screw on the backpack.
+
+The Pi sends text with `POST /api/lcd?line1=...&line2=...` (16 characters
+per line). `/api/status` reports `"lcd": true` when a display was found.
+
 ## Wi-Fi stability
 
 The access point keeps its radio awake at full transmit power, allows up to

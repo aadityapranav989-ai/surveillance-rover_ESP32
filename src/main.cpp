@@ -6,6 +6,7 @@
 #include "gps.h"
 #include "web_server.h"
 #include "diagnostics.h"
+#include "lcd.h"
 
 // Motion timer
 bool motionActive = false;
@@ -22,6 +23,7 @@ void setup()
     Serial.println(resetReasonName());
 
     initMotors();
+    initLcd();
     initGPS();
     initWebServer();
 
@@ -44,6 +46,7 @@ void loop()
         }
     }
     updateMotors();
+    updateLcd();
 
     watchdogUpdate();
 }
