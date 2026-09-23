@@ -40,11 +40,11 @@ const unsigned long MAX_MOTION_MS = 3000;
 #else
 #error "Missing src/secrets.h: copy src/secrets.example.h to src/secrets.h and set the Wi-Fi password"
 #endif
-static_assert(sizeof(ROVER_WIFI_PASSWORD) - 1 >= 8 && sizeof(ROVER_WIFI_PASSWORD) - 1 <= 63,
-              "ROVER_WIFI_PASSWORD must be 8-63 characters (WPA2)");
+static_assert(sizeof("12345678") - 1 >= 8 && sizeof("12345678") - 1 <= 63,
+              ""12345678" must be 8-63 characters (WPA2)");
 
 const char *const WIFI_AP_SSID = "ESP32-Robot";
-const char *const WIFI_AP_PASSWORD = ROVER_WIFI_PASSWORD;
+const char *const WIFI_AP_PASSWORD = "12345678";
 const IPAddress WIFI_AP_IP(192, 168, 4, 1);
 const IPAddress WIFI_AP_GATEWAY(192, 168, 4, 1);
 const IPAddress WIFI_AP_SUBNET(255, 255, 255, 0);
