@@ -34,6 +34,10 @@ const uint32_t GPS_BAUD_RATE = 9600;
 // shortened to this, so a bad value can never keep the motors running.
 const unsigned long MAX_MOTION_MS = 3000;
 
+// Time for a motor to ramp from stopped to full speed (and back). Softens every
+// start, stop and change of direction; STOP still cuts power immediately.
+const unsigned long MOTOR_RAMP_MS = 250;
+
 // Self-contained rover Wi-Fi network. The ESP32 is the access point.
 #if __has_include("secrets.h")
 #include "secrets.h"
@@ -50,3 +54,7 @@ const char *const WIFI_AP_PASSWORD = ROVER_WIFI_PASSWORD;
 const IPAddress WIFI_AP_IP(192, 168, 4, 1);
 const IPAddress WIFI_AP_GATEWAY(192, 168, 4, 1);
 const IPAddress WIFI_AP_SUBNET(255, 255, 255, 0);
+// Wi-Fi channel 1-13. If the rover Wi-Fi drops near other networks, try 6 or 11.
+const int WIFI_AP_CHANNEL = 1;
+// The ESP32 default is 4 devices; the Pi, laptop and a couple of phones can exceed that.
+const int WIFI_AP_MAX_CLIENTS = 8;

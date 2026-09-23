@@ -5,6 +5,7 @@
 #include "watchdog.h"
 #include "gps.h"
 #include "web_server.h"
+#include "diagnostics.h"
 
 // Motion timer
 bool motionActive = false;
@@ -17,6 +18,8 @@ void setup()
     Serial.begin(115200);
 
     Serial.println("ESP32 Robot Started");
+    Serial.print("Last reset reason: ");
+    Serial.println(resetReasonName());
 
     initMotors();
     initGPS();
@@ -31,15 +34,16 @@ void loop()
     processWebServer();
     updateGPS();
 
-    // Automatic stop after duration
+    // Automatic stop after duration, easing down instead of cutting power.
     if (motionActive)
     {
         if (millis() - motionStart >= motionDuration)
         {
-            stopMotors();
+            easeToStop();
             motionActive = false;
         }
     }
+    updateMotors();
 
     watchdogUpdate();
 }
