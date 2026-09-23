@@ -39,11 +39,25 @@ void startMotion(int left, int right, unsigned long duration)
     motionDuration = duration;
 }
 
+bool executeDrive(int leftSpeed, int rightSpeed, long durationMs)
+{
+    // Each side's own speed: equal speeds drive straight, different speeds curve.
+    if (leftSpeed < -255 || leftSpeed > 255 || rightSpeed < -255 || rightSpeed > 255 || durationMs < 1)
+        return false;
+    startMotion(leftSpeed, rightSpeed, (unsigned long)durationMs);
+    return true;
+}
+
 bool executeCommand(const String &cmd)
 {
     char action[20];
     int speed;
     float value;
+
+    int leftSpeed, rightSpeed;
+    long durationMs;
+    if (sscanf(cmd.c_str(), "DRIVE %d %d %ld", &leftSpeed, &rightSpeed, &durationMs) == 3)
+        return executeDrive(leftSpeed, rightSpeed, durationMs);
 
     // %19s keeps a long direction from overflowing action[20].
     if (sscanf(cmd.c_str(), "%19s %d %f", action, &speed, &value) == 3)

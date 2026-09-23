@@ -78,7 +78,18 @@ Dashboard: http://192.168.4.1
 GET  http://192.168.4.1/api/status
 POST http://192.168.4.1/api/command?direction=FORWARD&speed=80&value=5
 POST http://192.168.4.1/api/stop
+POST http://192.168.4.1/api/drive?left=180&right=120&ms=500
 ```
+
+`/api/drive` runs each side at its own speed (-255..255, negative is
+reverse) for `ms` milliseconds: equal speeds drive straight, different
+speeds drive in a curve, opposite speeds turn on the spot. The Pi uses it
+for smooth curved following and for the joystick. The same command works
+over the serial monitor as `DRIVE 180 120 500`.
+
+Every start, stop and change of direction ramps over `MOTOR_RAMP_MS`
+(250 ms, in `src/config.h`) instead of jumping, so the rover moves without
+jolts. `/api/stop`, `STOP` and the watchdog still cut power immediately.
 
 `value` is centimeters for forward/backward and degrees for turns. The
 firmware applies timed motion and stops automatically. A new command replaces
@@ -89,6 +100,19 @@ Commands are rejected with `400` unless `speed` is 1-255 and `value` is
 greater than 0. A single movement never runs longer than `MAX_MOTION_MS`
 (3 s, in `src/config.h`), whatever `value` asks for. The watchdog and the
 physical emergency stop remain the primary safety mechanisms.
+
+`GET /api/status` also reports `uptimeMs` (time since the ESP32 started),
+`resetReason` (why it last restarted: `brownout` means its supply voltage
+dipped, often when the motors start) and `clients` (devices on the rover
+Wi-Fi). If the Wi-Fi drops and `uptimeMs` is small afterwards, the ESP32
+itself restarted.
+
+## Wi-Fi stability
+
+The access point keeps its radio awake at full transmit power, allows up to
+`WIFI_AP_MAX_CLIENTS` (8) devices, and uses `WIFI_AP_CHANNEL` (1). If the
+connection drops near other Wi-Fi networks, change the channel to 6 or 11 in
+`src/config.h` and flash again.
 
 ## Raspberry Pi connection
 
