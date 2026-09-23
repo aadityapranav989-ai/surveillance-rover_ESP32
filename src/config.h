@@ -25,6 +25,15 @@ const int LEFT_LPWM_CH = 1;
 const int RIGHT_RPWM_CH = 2;
 const int RIGHT_LPWM_CH = 3;
 
+// 16x2 LCD on an I2C backpack: SDA GPIO21, SCL GPIO22. Address 0 means
+// "find it": the common 0x27 and 0x3F are both tried.
+const int LCD_SDA_PIN = 21;
+const int LCD_SCL_PIN = 22;
+const uint8_t LCD_I2C_ADDRESS = 0;
+const uint8_t LCD_COLUMNS = 16;
+// Show the rover's own status if the Pi has not sent a message for this long.
+const unsigned long LCD_PI_TIMEOUT_MS = 10000;
+
 // GY-NEO6MV2 GPS module on ESP32 UART2
 const int GPS_RX_PIN = 16; // Connect to GPS TX
 const int GPS_TX_PIN = 17; // Connect to GPS RX

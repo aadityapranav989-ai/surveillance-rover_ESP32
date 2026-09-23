@@ -6,6 +6,7 @@
 #include "gps.h"
 #include "serial_cmd.h"
 #include "diagnostics.h"
+#include "lcd.h"
 
 static WebServer server(80);
 static bool accessPointMode = false;
@@ -73,7 +74,7 @@ static void handleStatus()
     IPAddress address = accessPointMode ? WiFi.softAPIP() : WiFi.localIP();
     String json = "{\"wifi\":\"" + address.toString() + "\",\"ap\":" + (accessPointMode ? "true" : "false") + ",\"motionActive\":" + (motionActive ? "true" : "false");
     json += ",\"uptimeMs\":" + String(millis()) + ",\"resetReason\":\"" + resetReasonName() + "\"";
-    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"gps\":{";
+    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"lcd\":" + (lcdFound() ? "true" : "false") + ",\"gps\":{";
     json += "\"fix\":" + String(gpsHasFix() ? "true" : "false");
     json += ",\"latitude\":" + String(gpsLatitude(), 6);
     json += ",\"longitude\":" + String(gpsLongitude(), 6);
@@ -114,6 +115,13 @@ static void handleDrive()
     sendJson("{\"ok\":true}");
 }
 
+static void handleLcd()
+{
+    // Two lines of text from the Pi, e.g. /api/lcd?line1=UNKNOWN%20PERSON&line2=Tap%20card%3A%207s
+    lcdShow(server.arg("line1"), server.arg("line2"));
+    sendJson(String("{\"ok\":true,\"lcd\":") + (lcdFound() ? "true" : "false") + "}");
+}
+
 static void handleStop()
 {
     executeCommand("STOP");
@@ -139,6 +147,7 @@ void initWebServer()
     server.on("/api/command", HTTP_POST, handleCommand);
     server.on("/api/drive", HTTP_POST, handleDrive);
     server.on("/api/stop", HTTP_POST, handleStop);
+    server.on("/api/lcd", HTTP_POST, handleLcd);
     server.begin();
 }
 
