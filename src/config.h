@@ -48,3 +48,7 @@ const char *const WIFI_AP_PASSWORD = ROVER_WIFI_PASSWORD;
 const IPAddress WIFI_AP_IP(192, 168, 4, 1);
 const IPAddress WIFI_AP_GATEWAY(192, 168, 4, 1);
 const IPAddress WIFI_AP_SUBNET(255, 255, 255, 0);
+// Wi-Fi channel 1-13. If the rover Wi-Fi drops near other networks, try 6 or 11.
+const int WIFI_AP_CHANNEL = 1;
+// The ESP32 default is 4 devices; the Pi, laptop and a couple of phones can exceed that.
+const int WIFI_AP_MAX_CLIENTS = 8;

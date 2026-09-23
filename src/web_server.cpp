@@ -5,6 +5,7 @@
 #include "config.h"
 #include "gps.h"
 #include "serial_cmd.h"
+#include "diagnostics.h"
 
 static WebServer server(80);
 static bool accessPointMode = false;
@@ -70,7 +71,9 @@ static void handleRoot()
 static void handleStatus()
 {
     IPAddress address = accessPointMode ? WiFi.softAPIP() : WiFi.localIP();
-    String json = "{\"wifi\":\"" + address.toString() + "\",\"ap\":" + (accessPointMode ? "true" : "false") + ",\"motionActive\":" + (motionActive ? "true" : "false") + ",\"gps\":{";
+    String json = "{\"wifi\":\"" + address.toString() + "\",\"ap\":" + (accessPointMode ? "true" : "false") + ",\"motionActive\":" + (motionActive ? "true" : "false");
+    json += ",\"uptimeMs\":" + String(millis()) + ",\"resetReason\":\"" + resetReasonName() + "\"";
+    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"gps\":{";
     json += "\"fix\":" + String(gpsHasFix() ? "true" : "false");
     json += ",\"latitude\":" + String(gpsLatitude(), 6);
     json += ",\"longitude\":" + String(gpsLongitude(), 6);
@@ -106,8 +109,11 @@ void initWebServer()
 {
     accessPointMode = true;
     WiFi.mode(WIFI_AP);
+    // Keep the radio fully awake and at full power so the Pi and laptop stay connected.
+    WiFi.setSleep(false);
     WiFi.softAPConfig(WIFI_AP_IP, WIFI_AP_GATEWAY, WIFI_AP_SUBNET);
-    WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+    WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, WIFI_AP_CHANNEL, 0, WIFI_AP_MAX_CLIENTS);
+    WiFi.setTxPower(WIFI_POWER_19_5dBm);
     Serial.print("\nRover Wi-Fi AP: ");
     Serial.println(WIFI_AP_SSID);
     Serial.print("Dashboard: http://");

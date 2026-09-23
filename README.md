@@ -90,6 +90,19 @@ greater than 0. A single movement never runs longer than `MAX_MOTION_MS`
 (3 s, in `src/config.h`), whatever `value` asks for. The watchdog and the
 physical emergency stop remain the primary safety mechanisms.
 
+`GET /api/status` also reports `uptimeMs` (time since the ESP32 started),
+`resetReason` (why it last restarted: `brownout` means its supply voltage
+dipped, often when the motors start) and `clients` (devices on the rover
+Wi-Fi). If the Wi-Fi drops and `uptimeMs` is small afterwards, the ESP32
+itself restarted.
+
+## Wi-Fi stability
+
+The access point keeps its radio awake at full transmit power, allows up to
+`WIFI_AP_MAX_CLIENTS` (8) devices, and uses `WIFI_AP_CHANNEL` (1). If the
+connection drops near other Wi-Fi networks, change the channel to 6 or 11 in
+`src/config.h` and flash again.
+
 ## Raspberry Pi connection
 
 Join the Pi to `ESP32-Robot`, then assign its Wi-Fi connection the fixed
