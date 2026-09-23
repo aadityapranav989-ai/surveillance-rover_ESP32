@@ -1,0 +1,80 @@
+# ESP32 Rover Firmware
+
+PlatformIO firmware for the autonomous surveillance rover. The ESP32 is the
+rover's self-contained Wi-Fi access point and motor/GPS controller.
+
+## Network contract
+
+```text
+ESP32 access point:  ESP32-Robot
+Wi-Fi password:     robot123
+ESP32 address:      192.168.4.1
+Raspberry Pi:       192.168.4.10
+Pi dashboard:       http://192.168.4.10:8080/
+ESP32 dashboard:    http://192.168.4.1/
+```
+
+The ESP32 does not connect to a router or phone hotspot. The Pi, laptop, and
+camera device join `ESP32-Robot` directly.
+
+## Hardware
+
+Motor driver pins:
+
+- Left BTS7960: RPWM GPIO25, LPWM GPIO26
+- Right BTS7960: RPWM GPIO27, LPWM GPIO14
+
+GPS GY-NEO6MV2 on UART2:
+
+- ESP32 RX GPIO16 connected to GPS TX
+- ESP32 TX GPIO17 connected to GPS RX
+- Baud rate: 9600
+
+## Build and upload
+
+From the development computer:
+
+```powershell
+cd "D:\Desktop\Hackathon\ESP32 human detection\RadarTest"
+pio run
+pio device list
+pio run --target upload --upload-port COM4
+pio device monitor -b 115200
+```
+
+Close the serial monitor before uploading because it locks the serial port.
+Replace `COM4` with the port shown by `pio device list`.
+
+After reset, the serial monitor should show:
+
+```text
+Rover Wi-Fi AP: ESP32-Robot
+Dashboard: http://192.168.4.1
+```
+
+## HTTP API
+
+```text
+GET  http://192.168.4.1/api/status
+POST http://192.168.4.1/api/command?direction=FORWARD&speed=80&value=5
+POST http://192.168.4.1/api/stop
+```
+
+`value` is centimeters for forward/backward and degrees for turns. The
+firmware applies timed motion and stops automatically. The watchdog and the
+physical emergency stop remain the primary safety mechanisms.
+
+## Raspberry Pi connection
+
+Join the Pi to `ESP32-Robot`, then assign its Wi-Fi connection the fixed
+address `192.168.4.10`:
+
+```bash
+nmcli connection show --active
+sudo nmcli connection modify "ESP32-Robot" ipv4.method manual ipv4.addresses 192.168.4.10/24 ipv4.gateway 192.168.4.1 ipv4.dns 192.168.4.1
+sudo nmcli connection down "ESP32-Robot"
+sudo nmcli connection up "ESP32-Robot"
+curl --max-time 5 http://192.168.4.1/api/status
+```
+
+The Pi gateway uses `ESP32_URL=http://192.168.4.1`.
