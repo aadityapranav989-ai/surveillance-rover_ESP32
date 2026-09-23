@@ -111,7 +111,8 @@ itself restarted.
 
 A 16x2 character LCD with an I2C backpack (PCF8574, 4 pins) shows the
 rover's security status, sent by the Raspberry Pi: `UNKNOWN PERSON` /
-`Tap card: 7s`, `ACCESS GRANTED`, `!! INTRUDER !!` and so on. If the Pi sends
+`Tap card: 7s`, `ACCESS GRANTED`, `INTRUDER` / `DETECTED`, `WELCOME` / a
+person's name, and so on. If the Pi sends
 nothing for 10 seconds (`LCD_PI_TIMEOUT_MS`), the ESP32 shows its own status
 instead (`Pi offline`, GPS fix, Wi-Fi clients).
 
