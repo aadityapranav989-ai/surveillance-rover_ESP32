@@ -29,6 +29,9 @@ void startMotion(int left, int right, unsigned long duration)
 {
     watchdogKick();
 
+    if (duration > MAX_MOTION_MS)
+        duration = MAX_MOTION_MS;
+
     setMotor(calibrateSpeed(left), calibrateSpeed(right));
 
     motionActive = true;
@@ -42,8 +45,13 @@ bool executeCommand(const String &cmd)
     int speed;
     float value;
 
-    if (sscanf(cmd.c_str(), "%s %d %f", action, &speed, &value) == 3)
+    // %19s keeps a long direction from overflowing action[20].
+    if (sscanf(cmd.c_str(), "%19s %d %f", action, &speed, &value) == 3)
     {
+        // A negative or zero value would turn into a huge unsigned duration.
+        if (speed < 1 || speed > 255 || !(value > 0))
+            return false;
+
         String act = String(action);
 
         if (act == "FORWARD")

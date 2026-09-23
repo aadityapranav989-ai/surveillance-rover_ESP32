@@ -7,7 +7,7 @@ extern bool motionActive;
 static unsigned long lastCommandTime = 0;
 static bool watchdogTriggered = false;
 
-// Stop after 500 ms without commands
+// Force the motors off after 5 s without commands while no timed motion is running
 const unsigned long WATCHDOG_TIMEOUT = 5000;
 
 void watchdogInit()
