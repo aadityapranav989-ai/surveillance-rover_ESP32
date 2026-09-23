@@ -7,7 +7,7 @@ rover's self-contained Wi-Fi access point and motor/GPS controller.
 
 ```text
 ESP32 access point:  ESP32-Robot
-Wi-Fi password:     robot123
+Wi-Fi password:     set in src/secrets.h (not in Git)
 ESP32 address:      192.168.4.1
 Raspberry Pi:       192.168.4.10
 Pi dashboard:       http://192.168.4.10:8080/
@@ -29,6 +29,26 @@ GPS GY-NEO6MV2 on UART2:
 - ESP32 RX GPIO16 connected to GPS TX
 - ESP32 TX GPIO17 connected to GPS RX
 - Baud rate: 9600
+
+## Wi-Fi password
+
+The password lives in `src/secrets.h`, which Git ignores. Create it once
+before the first build:
+
+```powershell
+copy src\secrets.example.h src\secrets.h
+```
+
+Edit `src/secrets.h` and set `ROVER_WIFI_PASSWORD` (8-63 characters). The
+build stops with an error if the file is missing or the password is too
+short or too long.
+
+Changing the password disconnects every device. Update the Pi's saved Wi-Fi
+password before flashing, or you lose SSH access to the headless Pi:
+
+```bash
+sudo nmcli connection modify "ESP32-Robot" wifi-sec.psk "NEW_PASSWORD"
+```
 
 ## Build and upload
 
@@ -61,7 +81,13 @@ POST http://192.168.4.1/api/stop
 ```
 
 `value` is centimeters for forward/backward and degrees for turns. The
-firmware applies timed motion and stops automatically. The watchdog and the
+firmware applies timed motion and stops automatically. A new command replaces
+the one in progress, so sending short steps faster than they finish gives
+continuous movement.
+
+Commands are rejected with `400` unless `speed` is 1-255 and `value` is
+greater than 0. A single movement never runs longer than `MAX_MOTION_MS`
+(3 s, in `src/config.h`), whatever `value` asks for. The watchdog and the
 physical emergency stop remain the primary safety mechanisms.
 
 ## Raspberry Pi connection
