@@ -30,6 +30,16 @@ GPS GY-NEO6MV2 on UART2:
 - ESP32 TX GPIO17 connected to GPS RX
 - Baud rate: 9600
 
+16x2 LCD with I2C backpack:
+
+- VCC to 5V, GND to GND
+- SDA to GPIO21
+- SCL to GPIO22
+- Use a bidirectional I2C level shifter if the backpack pull-ups are tied to 5V;
+	ESP32 GPIO pins are not 5V tolerant.
+- The default I2C address is `0x27`; change `LCD_I2C_ADDRESS` in
+	`src/config.h` to `0x3F` if the backpack uses that address.
+
 ## Wi-Fi password
 
 The password lives in `src/secrets.h`, which Git ignores. Create it once

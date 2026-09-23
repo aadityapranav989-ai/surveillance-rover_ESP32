@@ -30,6 +30,13 @@ const int GPS_RX_PIN = 16; // Connect to GPS TX
 const int GPS_TX_PIN = 17; // Connect to GPS RX
 const uint32_t GPS_BAUD_RATE = 9600;
 
+// 16x2 LCD with an I2C backpack. Most backpacks use 0x27; some use 0x3F.
+const uint8_t LCD_I2C_ADDRESS = 0x27;
+const int LCD_SDA_PIN = 21;
+const int LCD_SCL_PIN = 22;
+const uint8_t LCD_COLUMNS = 16;
+const uint8_t LCD_ROWS = 2;
+
 // Longest single movement the ESP32 will run. A command that asks for more is
 // shortened to this, so a bad value can never keep the motors running.
 const unsigned long MAX_MOTION_MS = 3000;

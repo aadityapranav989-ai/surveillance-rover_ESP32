@@ -6,6 +6,7 @@
 #include "gps.h"
 #include "serial_cmd.h"
 #include "diagnostics.h"
+#include "lcd.h"
 
 static WebServer server(80);
 static bool accessPointMode = false;
@@ -120,6 +121,17 @@ static void handleStop()
     sendJson("{\"ok\":true}");
 }
 
+static void handleLCDStatus()
+{
+    if (!server.hasArg("state") || !server.hasArg("detail"))
+    {
+        sendJson("{\"error\":\"state and detail are required\"}", 400);
+        return;
+    }
+    setLCDRemoteStatus(server.arg("state").c_str(), server.arg("detail").c_str());
+    sendJson("{\"ok\":true}");
+}
+
 void initWebServer()
 {
     accessPointMode = true;
@@ -139,6 +151,7 @@ void initWebServer()
     server.on("/api/command", HTTP_POST, handleCommand);
     server.on("/api/drive", HTTP_POST, handleDrive);
     server.on("/api/stop", HTTP_POST, handleStop);
+    server.on("/api/lcd/status", HTTP_POST, handleLCDStatus);
     server.begin();
 }
 
