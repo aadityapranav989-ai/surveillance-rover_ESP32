@@ -99,6 +99,21 @@ static void handleCommand()
     sendJson("{\"ok\":true}");
 }
 
+static void handleDrive()
+{
+    if (!server.hasArg("left") || !server.hasArg("right") || !server.hasArg("ms"))
+    {
+        sendJson("{\"error\":\"left, right and ms are required\"}", 400);
+        return;
+    }
+    if (!executeDrive(server.arg("left").toInt(), server.arg("right").toInt(), server.arg("ms").toInt()))
+    {
+        sendJson("{\"error\":\"left and right must be -255..255 and ms at least 1\"}", 400);
+        return;
+    }
+    sendJson("{\"ok\":true}");
+}
+
 static void handleStop()
 {
     executeCommand("STOP");
@@ -122,6 +137,7 @@ void initWebServer()
     server.on("/", HTTP_GET, handleRoot);
     server.on("/api/status", HTTP_GET, handleStatus);
     server.on("/api/command", HTTP_POST, handleCommand);
+    server.on("/api/drive", HTTP_POST, handleDrive);
     server.on("/api/stop", HTTP_POST, handleStop);
     server.begin();
 }

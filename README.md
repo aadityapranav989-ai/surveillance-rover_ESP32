@@ -78,7 +78,18 @@ Dashboard: http://192.168.4.1
 GET  http://192.168.4.1/api/status
 POST http://192.168.4.1/api/command?direction=FORWARD&speed=80&value=5
 POST http://192.168.4.1/api/stop
+POST http://192.168.4.1/api/drive?left=180&right=120&ms=500
 ```
+
+`/api/drive` runs each side at its own speed (-255..255, negative is
+reverse) for `ms` milliseconds: equal speeds drive straight, different
+speeds drive in a curve, opposite speeds turn on the spot. The Pi uses it
+for smooth curved following and for the joystick. The same command works
+over the serial monitor as `DRIVE 180 120 500`.
+
+Every start, stop and change of direction ramps over `MOTOR_RAMP_MS`
+(250 ms, in `src/config.h`) instead of jumping, so the rover moves without
+jolts. `/api/stop`, `STOP` and the watchdog still cut power immediately.
 
 `value` is centimeters for forward/backward and degrees for turns. The
 firmware applies timed motion and stops automatically. A new command replaces

@@ -34,6 +34,10 @@ const uint32_t GPS_BAUD_RATE = 9600;
 // shortened to this, so a bad value can never keep the motors running.
 const unsigned long MAX_MOTION_MS = 3000;
 
+// Time for a motor to ramp from stopped to full speed (and back). Softens every
+// start, stop and change of direction; STOP still cuts power immediately.
+const unsigned long MOTOR_RAMP_MS = 250;
+
 // Self-contained rover Wi-Fi network. The ESP32 is the access point.
 #if __has_include("secrets.h")
 #include "secrets.h"

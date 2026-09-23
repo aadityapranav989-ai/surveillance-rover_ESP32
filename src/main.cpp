@@ -34,15 +34,16 @@ void loop()
     processWebServer();
     updateGPS();
 
-    // Automatic stop after duration
+    // Automatic stop after duration, easing down instead of cutting power.
     if (motionActive)
     {
         if (millis() - motionStart >= motionDuration)
         {
-            stopMotors();
+            easeToStop();
             motionActive = false;
         }
     }
+    updateMotors();
 
     watchdogUpdate();
 }

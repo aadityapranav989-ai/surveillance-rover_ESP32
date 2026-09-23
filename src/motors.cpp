@@ -2,6 +2,38 @@
 #include "motors.h"
 #include "config.h"
 
+// What each side is driving now and what it is ramping towards (-255..255).
+static float currentLeft = 0, currentRight = 0;
+static int targetLeft = 0, targetRight = 0;
+static unsigned long lastRampUpdate = 0;
+
+static void writeSide(int forwardChannel, int reverseChannel, int speed)
+{
+    if (speed >= 0)
+    {
+        ledcWrite(forwardChannel, speed);
+        ledcWrite(reverseChannel, 0);
+    }
+    else
+    {
+        ledcWrite(forwardChannel, 0);
+        ledcWrite(reverseChannel, -speed);
+    }
+}
+
+static void writeOutputs()
+{
+    writeSide(LEFT_RPWM_CH, LEFT_LPWM_CH, (int)roundf(currentLeft));
+    writeSide(RIGHT_RPWM_CH, RIGHT_LPWM_CH, (int)roundf(currentRight));
+}
+
+static float approach(float current, int target, float maxStep)
+{
+    if (current < target)
+        return min(current + maxStep, (float)target);
+    return max(current - maxStep, (float)target);
+}
+
 void initMotors()
 {
     // Configure PWM channels
@@ -18,47 +50,42 @@ void initMotors()
     ledcAttachPin(RIGHT_LPWM, RIGHT_LPWM_CH);
 
     stopMotors();
+    lastRampUpdate = millis();
 
     Serial.println("Motor Driver Initialized");
 }
 
 void setMotor(int leftSpeed, int rightSpeed)
 {
-    leftSpeed = constrain(leftSpeed, -255, 255);
-    rightSpeed = constrain(rightSpeed, -255, 255);
+    // The motors ramp to these speeds in updateMotors() instead of jumping.
+    targetLeft = constrain(leftSpeed, -255, 255);
+    targetRight = constrain(rightSpeed, -255, 255);
+}
 
-    // LEFT SIDE
-    if (leftSpeed >= 0)
-    {
-        ledcWrite(LEFT_RPWM_CH, leftSpeed);
-        ledcWrite(LEFT_LPWM_CH, 0);
-    }
-    else
-    {
-        ledcWrite(LEFT_RPWM_CH, 0);
-        ledcWrite(LEFT_LPWM_CH, -leftSpeed);
-    }
+void updateMotors()
+{
+    unsigned long now = millis();
+    unsigned long elapsed = now - lastRampUpdate;
+    if (elapsed == 0)
+        return;
+    lastRampUpdate = now;
 
-    // RIGHT SIDE
-    if (rightSpeed >= 0)
-    {
-        ledcWrite(RIGHT_RPWM_CH, rightSpeed);
-        ledcWrite(RIGHT_LPWM_CH, 0);
-    }
-    else
-    {
-        ledcWrite(RIGHT_RPWM_CH, 0);
-        ledcWrite(RIGHT_LPWM_CH, -rightSpeed);
-    }
+    // A full speed change (0 -> 255) takes MOTOR_RAMP_MS.
+    float maxStep = elapsed * 255.0f / MOTOR_RAMP_MS;
+    currentLeft = approach(currentLeft, targetLeft, maxStep);
+    currentRight = approach(currentRight, targetRight, maxStep);
+    writeOutputs();
+}
+
+void easeToStop()
+{
+    setMotor(0, 0);
 }
 
 void stopMotors()
 {
-    ledcWrite(LEFT_RPWM_CH, 0);
-    ledcWrite(LEFT_LPWM_CH, 0);
-
-    ledcWrite(RIGHT_RPWM_CH, 0);
-    ledcWrite(RIGHT_LPWM_CH, 0);
-
-    // Serial.println("STOPPED");
+    // Immediate: used for STOP and the watchdog.
+    targetLeft = targetRight = 0;
+    currentLeft = currentRight = 0;
+    writeOutputs();
 }
