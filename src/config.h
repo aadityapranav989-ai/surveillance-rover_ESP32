@@ -58,6 +58,16 @@ static_assert(sizeof(ROVER_WIFI_PASSWORD) - 1 >= 8 &&
                   sizeof(ROVER_WIFI_PASSWORD) - 1 <= 63,
               "ROVER_WIFI_PASSWORD must be 8-63 characters (WPA2)");
 
+// The Raspberry Pi hosts the rover Wi-Fi; the ESP32 joins it with a fixed address.
+// The Pi's hotspot uses the same password (ROVER_WIFI_PASSWORD in secrets.h).
+const char *const ROVER_WIFI_SSID = "TAPIR";
+const IPAddress ROVER_STATION_IP(192, 168, 50, 2);
+const IPAddress ROVER_GATEWAY_IP(192, 168, 50, 1);  // the Pi
+const IPAddress ROVER_SUBNET(255, 255, 255, 0);
+// If the Pi's network cannot be joined for this long, the ESP32 opens its own
+// network below (the old setup) so it can still be reached.
+const unsigned long FALLBACK_AP_AFTER_MS = 30000;
+
 const char *const WIFI_AP_SSID = "ESP32-Robot";
 const char *const WIFI_AP_PASSWORD = ROVER_WIFI_PASSWORD;
 const IPAddress WIFI_AP_IP(192, 168, 4, 1);

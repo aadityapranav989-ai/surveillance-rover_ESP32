@@ -8,6 +8,7 @@
 #include "diagnostics.h"
 #include "lcd.h"
 #include "udp_control.h"
+#include "wifi_link.h"
 
 // Motion timer
 bool motionActive = false;
@@ -26,6 +27,7 @@ void setup()
     initMotors();
     initLcd();
     initGPS();
+    initWifi();
     initWebServer();
     initUdpControl();
 
@@ -34,6 +36,7 @@ void setup()
 
 void loop()
 {
+    updateWifi();
     processSerial();
     processWebServer();
     processUdpControl();

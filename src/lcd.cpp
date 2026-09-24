@@ -6,6 +6,7 @@
 #include "config.h"
 #include "gps.h"
 #include "lcd.h"
+#include "wifi_link.h"
 
 static LiquidCrystal_I2C *lcd = nullptr;
 static String shownLine1, shownLine2;
@@ -96,7 +97,7 @@ void updateLcd()
     // No recent message from the Pi: show the rover's own status instead of a stale message.
     String line2 = String("Pi offline ") + (gpsHasFix() ? "GPS" : "noGPS");
     if ((now / 3000) % 2 == 1)
-        line2 = String("Wi-Fi clients: ") + WiFi.softAPgetStationNum();
+        line2 = wifiConnected() ? String("IP ") + wifiAddress() : String("No Wi-Fi");
     draw("ROVER SENTRY", line2);
 }
 
