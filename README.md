@@ -81,6 +81,13 @@ POST http://192.168.4.1/api/stop
 POST http://192.168.4.1/api/drive?left=180&right=120&ms=500
 ```
 
+The same commands can be sent as UDP text packets to port 4210
+(`CONTROL_UDP_PORT`), for example `DRIVE 180 120 500` or `STOP`. The Pi uses
+UDP for driving: it needs no connection, so a lost packet costs nothing (the
+next command replaces it), while a lost packet when opening an HTTP
+connection delays that command by a full second. `/api/status` reports
+`udpPort` so the Pi knows the firmware supports it.
+
 `/api/drive` runs each side at its own speed (-255..255, negative is
 reverse) for `ms` milliseconds: equal speeds drive straight, different
 speeds drive in a curve, opposite speeds turn on the spot. The Pi uses it

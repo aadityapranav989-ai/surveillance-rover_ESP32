@@ -74,7 +74,7 @@ static void handleStatus()
     IPAddress address = accessPointMode ? WiFi.softAPIP() : WiFi.localIP();
     String json = "{\"wifi\":\"" + address.toString() + "\",\"ap\":" + (accessPointMode ? "true" : "false") + ",\"motionActive\":" + (motionActive ? "true" : "false");
     json += ",\"uptimeMs\":" + String(millis()) + ",\"resetReason\":\"" + resetReasonName() + "\"";
-    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"lcd\":" + (lcdFound() ? "true" : "false") + ",\"gps\":{";
+    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"lcd\":" + (lcdFound() ? "true" : "false") + ",\"udpPort\":" + String(CONTROL_UDP_PORT) + ",\"gps\":{";
     json += "\"fix\":" + String(gpsHasFix() ? "true" : "false");
     json += ",\"latitude\":" + String(gpsLatitude(), 6);
     json += ",\"longitude\":" + String(gpsLongitude(), 6);
