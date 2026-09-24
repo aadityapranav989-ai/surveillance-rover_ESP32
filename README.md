@@ -6,16 +6,24 @@ rover's self-contained Wi-Fi access point and motor/GPS controller.
 ## Network contract
 
 ```text
-ESP32 access point:  ESP32-Robot
-Wi-Fi password:     set in src/secrets.h (not in Git)
-ESP32 address:      192.168.4.1
-Raspberry Pi:       192.168.4.10
-Pi dashboard:       http://192.168.4.10:8080/
-ESP32 dashboard:    http://192.168.4.1/
+Rover Wi-Fi:        TAPIR, hosted by the Raspberry Pi
+Wi-Fi password:     set in src/secrets.h (not in Git); the Pi hotspot uses the same one
+Raspberry Pi:       192.168.50.1
+Pi dashboard:       http://192.168.50.1:8080/
+ESP32 address:      192.168.50.2 (fixed)
+ESP32 dashboard:    http://192.168.50.2/
 ```
 
-The ESP32 does not connect to a router or phone hotspot. The Pi, laptop, and
-camera device join `ESP32-Robot` directly.
+The Raspberry Pi hosts the rover Wi-Fi (`TAPIR`) and the ESP32 joins it, as
+does the laptop. Video then goes straight from the Pi to the laptop, and the
+ESP32's small radio only carries drive commands. (Earlier the ESP32 hosted
+the network and relayed all the video, which made both the video and the
+controls lag.)
+
+If the ESP32 cannot join `TAPIR` for 30 seconds (`FALLBACK_AP_AFTER_MS`),
+it also opens its own `ESP32-Robot` network at `192.168.4.1` with the same
+password, so it can still be reached. It closes that network again once it
+is back on `TAPIR`. The serial monitor shows which network it is on.
 
 ## Hardware
 
@@ -81,6 +89,13 @@ POST http://192.168.4.1/api/stop
 POST http://192.168.4.1/api/drive?left=180&right=120&ms=500
 ```
 
+The same commands can be sent as UDP text packets to port 4210
+(`CONTROL_UDP_PORT`), for example `DRIVE 180 120 500` or `STOP`. The Pi uses
+UDP for driving: it needs no connection, so a lost packet costs nothing (the
+next command replaces it), while a lost packet when opening an HTTP
+connection delays that command by a full second. `/api/status` reports
+`udpPort` so the Pi knows the firmware supports it.
+
 `/api/drive` runs each side at its own speed (-255..255, negative is
 reverse) for `ms` milliseconds: equal speeds drive straight, different
 speeds drive in a curve, opposite speeds turn on the spot. The Pi uses it
@@ -111,7 +126,8 @@ itself restarted.
 
 A 16x2 character LCD with an I2C backpack (PCF8574, 4 pins) shows the
 rover's security status, sent by the Raspberry Pi: `UNKNOWN PERSON` /
-`Tap card: 7s`, `ACCESS GRANTED`, `!! INTRUDER !!` and so on. If the Pi sends
+`Tap card: 7s`, `ACCESS GRANTED`, `INTRUDER` / `DETECTED`, `WELCOME` / a
+person's name, and so on. If the Pi sends
 nothing for 10 seconds (`LCD_PI_TIMEOUT_MS`), the ESP32 shows its own status
 instead (`Pi offline`, GPS fix, Wi-Fi clients).
 

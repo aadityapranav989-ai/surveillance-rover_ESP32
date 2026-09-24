@@ -7,6 +7,8 @@
 #include "web_server.h"
 #include "diagnostics.h"
 #include "lcd.h"
+#include "udp_control.h"
+#include "wifi_link.h"
 
 // Motion timer
 bool motionActive = false;
@@ -25,15 +27,19 @@ void setup()
     initMotors();
     initLcd();
     initGPS();
+    initWifi();
     initWebServer();
+    initUdpControl();
 
     watchdogInit();
 }
 
 void loop()
 {
+    updateWifi();
     processSerial();
     processWebServer();
+    processUdpControl();
     updateGPS();
 
     // Automatic stop after duration, easing down instead of cutting power.

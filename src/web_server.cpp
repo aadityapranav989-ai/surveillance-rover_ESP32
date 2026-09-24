@@ -7,9 +7,9 @@
 #include "serial_cmd.h"
 #include "diagnostics.h"
 #include "lcd.h"
+#include "wifi_link.h"
 
 static WebServer server(80);
-static bool accessPointMode = false;
 
 extern bool motionActive;
 
@@ -71,10 +71,10 @@ static void handleRoot()
 
 static void handleStatus()
 {
-    IPAddress address = accessPointMode ? WiFi.softAPIP() : WiFi.localIP();
-    String json = "{\"wifi\":\"" + address.toString() + "\",\"ap\":" + (accessPointMode ? "true" : "false") + ",\"motionActive\":" + (motionActive ? "true" : "false");
+    String json = "{\"wifi\":\"" + wifiAddress() + "\",\"ap\":" + (fallbackApActive() ? "true" : "false") + ",\"motionActive\":" + (motionActive ? "true" : "false");
+    json += ",\"rssi\":" + String(wifiConnected() ? WiFi.RSSI() : 0);
     json += ",\"uptimeMs\":" + String(millis()) + ",\"resetReason\":\"" + resetReasonName() + "\"";
-    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"lcd\":" + (lcdFound() ? "true" : "false") + ",\"gps\":{";
+    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"lcd\":" + (lcdFound() ? "true" : "false") + ",\"udpPort\":" + String(CONTROL_UDP_PORT) + ",\"gps\":{";
     json += "\"fix\":" + String(gpsHasFix() ? "true" : "false");
     json += ",\"latitude\":" + String(gpsLatitude(), 6);
     json += ",\"longitude\":" + String(gpsLongitude(), 6);
@@ -130,18 +130,6 @@ static void handleStop()
 
 void initWebServer()
 {
-    accessPointMode = true;
-    WiFi.mode(WIFI_AP);
-    // Keep the radio fully awake and at full power so the Pi and laptop stay connected.
-    WiFi.setSleep(false);
-    WiFi.softAPConfig(WIFI_AP_IP, WIFI_AP_GATEWAY, WIFI_AP_SUBNET);
-    WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, WIFI_AP_CHANNEL, 0, WIFI_AP_MAX_CLIENTS);
-    WiFi.setTxPower(WIFI_POWER_19_5dBm);
-    Serial.print("\nRover Wi-Fi AP: ");
-    Serial.println(WIFI_AP_SSID);
-    Serial.print("Dashboard: http://");
-    Serial.println(WiFi.softAPIP());
-
     server.on("/", HTTP_GET, handleRoot);
     server.on("/api/status", HTTP_GET, handleStatus);
     server.on("/api/command", HTTP_POST, handleCommand);
