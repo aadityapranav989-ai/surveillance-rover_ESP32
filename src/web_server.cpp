@@ -74,7 +74,7 @@ static void handleStatus()
     String json = "{\"wifi\":\"" + wifiAddress() + "\",\"ap\":" + (fallbackApActive() ? "true" : "false") + ",\"motionActive\":" + (motionActive ? "true" : "false");
     json += ",\"rssi\":" + String(wifiConnected() ? WiFi.RSSI() : 0);
     json += ",\"uptimeMs\":" + String(millis()) + ",\"resetReason\":\"" + resetReasonName() + "\"";
-    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"lcd\":" + (lcdFound() ? "true" : "false") + ",\"udpPort\":" + String(CONTROL_UDP_PORT) + ",\"gps\":{";
+    json += ",\"clients\":" + String(WiFi.softAPgetStationNum()) + ",\"lcd\":" + (lcdFound() ? "true" : "false") + ",\"udpPort\":" + String(CONTROL_UDP_PORT) + ",\"udpLcd\":true" + ",\"gps\":{";
     json += "\"fix\":" + String(gpsHasFix() ? "true" : "false");
     json += ",\"latitude\":" + String(gpsLatitude(), 6);
     json += ",\"longitude\":" + String(gpsLongitude(), 6);
