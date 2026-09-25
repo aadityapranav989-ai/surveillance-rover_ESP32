@@ -13,6 +13,9 @@ static String shownLine1, shownLine2;
 static unsigned long lastPiMessage = 0;
 static bool piMessageSeen = false;
 static unsigned long lastFallbackUpdate = 0;
+static portMUX_TYPE queueLock = portMUX_INITIALIZER_UNLOCKED;
+static char queued1[17], queued2[17];
+static bool queuedText = false;
 
 static String fit(const String &text)
 {
@@ -85,8 +88,27 @@ void lcdShow(const String &line1, const String &line2)
     draw(line1, line2);
 }
 
+void lcdQueue(const String &line1, const String &line2)
+{
+    portENTER_CRITICAL(&queueLock);
+    strlcpy(queued1, line1.c_str(), sizeof(queued1));
+    strlcpy(queued2, line2.c_str(), sizeof(queued2));
+    queuedText = true;
+    portEXIT_CRITICAL(&queueLock);
+}
+
 void updateLcd()
 {
+    if (queuedText)
+    {
+        char line1[17], line2[17];
+        portENTER_CRITICAL(&queueLock);
+        memcpy(line1, queued1, sizeof(line1));
+        memcpy(line2, queued2, sizeof(line2));
+        queuedText = false;
+        portEXIT_CRITICAL(&queueLock);
+        lcdShow(line1, line2);
+    }
     if (lcd == nullptr)
         return;
     unsigned long now = millis();

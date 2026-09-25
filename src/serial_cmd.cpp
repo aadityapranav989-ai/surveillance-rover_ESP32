@@ -3,6 +3,7 @@
 #include "motors.h"
 #include "watchdog.h"
 #include "config.h"
+#include "control.h"
 
 // Motion variables from main.cpp
 extern bool motionActive;
@@ -41,6 +42,7 @@ void startMotion(int left, int right, unsigned long duration)
 
 bool executeDrive(int leftSpeed, int rightSpeed, long durationMs)
 {
+    ControlGuard guard;
     // Each side's own speed: equal speeds drive straight, different speeds curve.
     if (leftSpeed < -255 || leftSpeed > 255 || rightSpeed < -255 || rightSpeed > 255 || durationMs < 1)
         return false;
@@ -50,6 +52,7 @@ bool executeDrive(int leftSpeed, int rightSpeed, long durationMs)
 
 bool executeCommand(const String &cmd)
 {
+    ControlGuard guard;
     char action[20];
     int speed;
     float value;

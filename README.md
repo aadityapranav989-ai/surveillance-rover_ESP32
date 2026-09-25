@@ -102,6 +102,12 @@ speeds drive in a curve, opposite speeds turn on the spot. The Pi uses it
 for smooth curved following and for the joystick. The same command works
 over the serial monitor as `DRIVE 180 120 500`.
 
+Motor control (the speed ramp, timed stops, the watchdog and UDP drive
+commands) runs in its own high-priority FreeRTOS task (`control.cpp`), so a
+slow web request or LCD update in the main loop cannot delay it. UDP packets
+of the form `LCD first line|second line` update the display without an HTTP
+request.
+
 Every start, stop and change of direction ramps over `MOTOR_RAMP_MS`
 (250 ms, in `src/config.h`) instead of jumping, so the rover moves without
 jolts. `/api/stop`, `STOP` and the watchdog still cut power immediately.

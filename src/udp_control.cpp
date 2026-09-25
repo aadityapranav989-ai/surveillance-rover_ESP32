@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "serial_cmd.h"
+#include "lcd.h"
 #include "udp_control.h"
 
 static WiFiUDP udp;
@@ -23,6 +24,14 @@ void processUdpControl()
         text[length > 0 ? length : 0] = '\0';
         String command(text);
         command.trim();
+        if (command.startsWith("LCD "))
+        {
+            // "LCD first line|second line": shown by the main loop, which owns the display.
+            int split = command.indexOf('|');
+            lcdQueue(command.substring(4, split < 0 ? command.length() : split),
+                     split < 0 ? String("") : command.substring(split + 1));
+            continue;
+        }
         executeCommand(command);
     }
 }

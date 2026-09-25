@@ -9,6 +9,7 @@
 #include "lcd.h"
 #include "udp_control.h"
 #include "wifi_link.h"
+#include "control.h"
 
 // Motion timer
 bool motionActive = false;
@@ -32,27 +33,17 @@ void setup()
     initUdpControl();
 
     watchdogInit();
+    initControlTask();
 }
 
 void loop()
 {
+    // Motors, UDP drive commands and the watchdog run in the control task
+    // (control.cpp); this loop only handles work that may be slow.
     updateWifi();
     processSerial();
     processWebServer();
-    processUdpControl();
     updateGPS();
-
-    // Automatic stop after duration, easing down instead of cutting power.
-    if (motionActive)
-    {
-        if (millis() - motionStart >= motionDuration)
-        {
-            easeToStop();
-            motionActive = false;
-        }
-    }
-    updateMotors();
     updateLcd();
-
-    watchdogUpdate();
+    delay(1);
 }

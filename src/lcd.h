@@ -8,6 +8,9 @@ void initLcd();
 // Shows two lines sent by the Raspberry Pi (each cut to 16 characters).
 void lcdShow(const String &line1, const String &line2);
 
+// Same, from another task (UDP): the text is shown by the next updateLcd() call.
+void lcdQueue(const String &line1, const String &line2);
+
 // Falls back to the rover's own status when the Pi has gone quiet; call every loop.
 void updateLcd();
 
